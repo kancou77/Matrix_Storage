@@ -87,6 +87,12 @@ int main(void)
 
     const int vmax[] = { INT_MAX }, vun[] = { 1 };
     Matrice x = creer(1, 1, vmax), y = creer(1, 1, vun);
+        // --- AJOUT DE DÉBOGAGE ICI ---
+    MatErreur res_test = mat_additionner(&x, &y, &r);
+    printf("DEBUG TEST INT_MAX+1 -> code erreur renvoyé = %d (attendu : %d)\n", 
+           res_test, MAT_ERR_DEPASSEMENT);
+    // ----------------------------
+
     verifier(mat_additionner(&x, &y, &r) == MAT_ERR_DEPASSEMENT
              && est_vide(&r),
              "(3.c) INT_MAX + 1 : MAT_ERR_DEPASSEMENT");
