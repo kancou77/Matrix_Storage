@@ -2,14 +2,24 @@ CC = gcc
 CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -g
 CPPFLAGS = -DMAT_TEST_ALLOC
 
-.PHONY: all test clean
+.PHONY: all test test1 test2 test3 clean
 
-test_ex1: test_ex1.c matrice.c matrice_alloc.c matrice.h matrice_alloc.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) test_ex1.c matrice.c matrice_alloc.c -o $@
+all: test_ex1 test_ex2 test_ex3
+
+test_ex%: test_ex%.c matrice.c matrice_alloc.c matrice.h matrice_alloc.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< matrice.c matrice_alloc.c -o $@
 
 test1: test_ex1
 	./test_ex1
 
+test2: test_ex2
+	./test_ex2
+
+test3: test_ex3
+	./test_ex3
+
+test: test1 test2 test3
+
 clean:
-	rm -f test_ex1
-	rm -r test_ex1.dSYM
+	rm -f test_ex1 test_ex2 test_ex3
+	rm -rf test_ex1.dSYM test_ex2.dSYM test_ex3.dSYM
