@@ -9,6 +9,6 @@ plusieurs programmes.
 
 Membres :
 
-- ADRAHAMI Nizar
+- ADRHAMI Nizar
 - OUBIHI Wael
 - Thiam Adama
