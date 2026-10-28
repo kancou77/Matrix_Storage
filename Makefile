@@ -6,8 +6,8 @@ CPPFLAGS = -DMAT_TEST_ALLOC
 
 all: test_ex1 test_ex2 test_ex3
 
-test_ex%: test_ex%.c matrice.c matrice_alloc.c matrice_calcul.c matrice.h matrice_alloc.h matrice_calcul.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< matrice.c matrice_alloc.c matrice_calcul.c -o $@
+test_ex%: test_ex%.c matrice.c matrice_alloc.c matrice_calcul.c matrice_io.c matrice.h matrice_alloc.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< matrice.c matrice_alloc.c matrice_calcul.c matrice_io.c -o $@
 
 test1: test_ex1
 	./test_ex1
