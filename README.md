@@ -10,7 +10,7 @@
 - [3. Réalisation par exercice](#3-réalisation-par-exercice)
 - [4. Vérifications mémoire](#4-vérifications-mémoire)
 - [5. Démonstration finale](#5-démonstration-finale)
-- [6. Bilan, répartition du travail et aides](#6-bilan-répartition-du-travail-et-aides)
+- [6. Bilan et répartition du travail](#6-bilan-répartition-du-travail)
 
 ## 1. Introduction
 
@@ -45,40 +45,23 @@ Les fonctions susceptibles d’échouer renvoient un `MatErreur`. Le programme p
 
 Le schéma suivant représente les responsabilités et les appels entre modules ; il ne représente pas les inclusions de fichiers.
 
-```mermaid
-flowchart TD
-    main[main.c] --> io[matrice_io : lire, écrire, afficher]
-    main --> calcul[matrice_calcul : additionner, multiplier]
-    main --> alloc[matrice_alloc : détruire]
-    main --> commun[matrice : messages et validation]
-    io --> alloc
-    calcul --> alloc
-    io --> commun
-    calcul --> commun
-```
+main.c
+├── matrice_io : lire, écrire et afficher les matrices
+├── matrice_calcul : additionner et multiplier les matrices
+├── matrice_alloc : détruire les matrices
+└── matrice : obtenir les messages d’erreur
+
+matrice_io
+├── matrice_alloc : allouer et détruire les matrices
+└── matrice : vérifier la validité des matrices
+
+matrice_calcul
+├── matrice_alloc : allouer et détruire les matrices
+└── matrice : vérifier la validité des matrices
 
 ### Inclusions et visibilité
 
 Chaque fichier d’implémentation inclut son propre en-tête pour vérifier la cohérence entre les prototypes et les définitions. Les en-têtes des modules utilisent le type `Matrice` défini dans `matrice.h`. Le module d’entrées-sorties utilise aussi `FILE`, fourni par `<stdio.h>`.
-
-Ce graphe présente les inclusions de projet ; les en-têtes standard sont omis pour la lisibilité.
-
-```mermaid
-flowchart TD
-    main[main.c] --> h[matrice.h]
-    main --> ah[matrice_alloc.h]
-    main --> ih[matrice_io.h]
-    main --> ch[matrice_calcul.h]
-    c[matrice.c] --> h
-    ac[matrice_alloc.c] --> ah
-    ic[matrice_io.c] --> ih
-    ic --> ah
-    cc[matrice_calcul.c] --> ch
-    cc --> ah
-    ah --> h
-    ih --> h
-    ch --> h
-```
 
 Les gardes `#ifndef`, `#define` et `#endif` empêchent de traiter plusieurs fois le même en-tête dans une unité de traduction. Elles évitent notamment de redéfinir la structure lorsque plusieurs modules incluent indirectement `matrice.h`.
 
@@ -96,7 +79,7 @@ Les fonctions internes sont déclarées `static` pour limiter leur visibilité a
 | R6 | Remettre une matrice détruite à vide pour autoriser une nouvelle destruction sans effet. |
 | R7 | Fermer chaque flux dans le code qui l’a ouvert. |
 
-L’allocation à deux niveaux nécessite de traiter l’échec partiel : si une ligne ne peut pas être réservée, les lignes déjà créées sont libérées avant le tableau de pointeurs. Pour les calculs, les conversions vers `long long` ont lieu avant l’opération ; le résultat est vérifié avant sa conversion en `int`. L’accumulation du produit matriciel exige également un contrôle avant chaque addition dans le `long long`.
+L’allocation à deux niveaux nécessite de traiter l’échec partiel : si une ligne ne peut pas être réservée, les lignes déjà créées sont libérées avant le tableau de pointeurs. Pour les calculs, les conversions vers `long long` ont lieu avant l’opération .Le résultat est vérifié avant sa conversion en `int`. L’accumulation du produit matriciel exige également un contrôle avant chaque addition dans le `long long`.
 
 ### Compilation et utilisation
 
@@ -140,7 +123,7 @@ Un fichier de matrice commence par deux entiers indiquant le nombre de lignes et
 
 ### Exercice 1 — Outils communs, allocation et destruction
 
-Fichiers : [matrice.c](matrice.c) et [matrice_alloc.c](matrice_alloc.c).
+Fichiers : [matrice.c] et [matrice_alloc.c].
 
 Le travail porte sur les messages d’erreur, la validité des matrices, le contrôle des arguments, l’allocation des lignes, le transfert du résultat et sa destruction. La fonction de validation utilise le court-circuit de `&&` pour vérifier le pointeur avant d’accéder à ses champs.
 
@@ -334,7 +317,7 @@ Les écritures sont tamponnées. `fflush` force la transmission des données du 
 
 ### Exercice 3 — Calcul matriciel
 
-Fichier : [matrice_calcul.c](matrice_calcul.c).
+Fichier : [matrice_calcul.c].
 
 L’addition exige des dimensions identiques et parcourt chaque coefficient. Pour le produit, le nombre de colonnes de la première matrice doit correspondre au nombre de lignes de la seconde. Les trois boucles calculent chaque résultat à partir d’une ligne et d’une colonne. Le résultat possède ses propres allocations et les dépassements doivent entraîner un nettoyage avant le retour d’erreur.
 
@@ -443,7 +426,7 @@ Un dépassement d’entier signé constitue déjà un comportement indéfini : l
 
 ### Exercice 4 — Démonstration
 
-Fichier : [main.c](main.c).
+Fichier : [main.c].
 
 Le programme assemble les modules pour afficher les entrées, choisir entre addition et multiplication, afficher le résultat et signaler la réussite après l’enregistrement. Les erreurs de calcul doivent préciser la cause et les dimensions concernées. Les traces des scénarios sont présentées dans la section 5.
 
@@ -483,11 +466,11 @@ printf("Résultat enregistré dans \"%s\".\n", argv[4]);
 
 **Q6.1 — Pourquoi afficher les erreurs dans `main.c` ?**
 
-La bibliothèque renvoie une information exploitable sans imposer une présentation. Le programme appelant choisit de l’afficher sur le terminal, dans une fenêtre graphique ou dans un journal. Cela facilite la réutilisation et les tests.
+La bibliothèque renvoie une information exploitable sans imposer une présentation. Le programme appelant choisit de l’afficher sur le terminal. Cela facilite la réutilisation et les tests.
 
 **Q6.2 — Pourquoi vérifier `fclose` dans `sauvegarder` ?**
 
-La fermeture d’un flux d’écriture peut révéler une erreur lors de la transmission finale des données. En lecture, il n’y a pas de tampon de sortie à vider ; le code fourni contrôle les erreurs de lecture dans `mat_lire` et ne traite pas le retour de fermeture dans `charger`. Cela ne signifie pas qu’une fermeture en lecture est universellement incapable d’échouer.
+La fermeture d’un flux d’écriture peut révéler une erreur lors de la transmission finale des données. En lecture, il n’y a pas de tampon de sortie à vider .Le code fourni contrôle les erreurs de lecture dans `mat_lire` et ne traite pas le retour de fermeture dans `charger`. Cela ne signifie pas qu’une fermeture en lecture est universellement incapable d’échouer.
 
 **Q6.3 — Que libérer si l’enregistrement échoue après le calcul ?**
 
@@ -641,11 +624,11 @@ Code de retour observé : **1**. Le programme refuse l’opération, indique le 
 
 Pour contrôler manuellement un code de sortie, exécuter `echo $?` immédiatement après le programme, avant toute autre commande.
 
-## 6. Bilan, répartition du travail et aides
+## 6. Bilan et répartition du travail 
 
 Une difficulté rencontrée a été l’édition de liens : les fonctions `mat_afficher`, `mat_ecrire` et `mat_lire` étaient introuvables parce que `matrice_io.c` manquait dans la commande de compilation. L’ajout de ce module a résolu le problème. Le Makefile a ensuite été adapté pour construire les trois tests et le programme de démonstration avec les sources appropriées.
 
-Une autre difficulté a été la disparition de `demo_matrices` après le nettoyage. Il faut reconstruire l’exécutable avant de relancer les tests. Un ancien fichier de résultat ne doit jamais être considéré comme la preuve d’une exécution réussie.
+Le travail a été réparti de manière à ce que chacun touche un exercice !
 
 Ce TD met en évidence l’importance des contrats entre modules et d’un nettoyage correct sur tous les chemins d’erreur. Les résultats fonctionnels et les contrôles Valgrind se complètent : obtenir une matrice correcte ne suffit pas si le programme fuit de la mémoire ou utilise des adresses invalides.
 
