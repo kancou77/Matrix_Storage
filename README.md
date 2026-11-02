@@ -1,7 +1,7 @@
 # Compte rendu — Stockage de matrices en C
 
 **Membres du trinôme :** ADRHAMI Nizar, OUBIHI Wael et Thiam Adama  
-**Identifiants GitHub :** nizaradrhami, wvael et kancou77
+**Identifiants GitHub :** nizaradrhami, wvaeel et kancou77
 
 ## Table des matières
 
