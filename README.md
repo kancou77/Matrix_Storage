@@ -10,7 +10,7 @@
 - [3. Réalisation par exercice](#3-réalisation-par-exercice)
 - [4. Vérifications mémoire](#4-vérifications-mémoire)
 - [5. Démonstration finale](#5-démonstration-finale)
-- [6. Bilan et répartition du travail](#6-bilan-répartition-du-travail)
+- [6. Bilan et répartition du travail](#6-bilan-et-répartition-du-travail)
 
 ## 1. Introduction
 
@@ -43,21 +43,20 @@ Les fonctions susceptibles d’échouer renvoient un `MatErreur`. Le programme p
 
 ### Relations entre modules
 
-Le schéma suivant représente les responsabilités et les appels entre modules ; il ne représente pas les inclusions de fichiers.
+Le schéma suivant représente les responsabilités et les appels entre modules . 
 
-main.c
-├── matrice_io : lire, écrire et afficher les matrices
-├── matrice_calcul : additionner et multiplier les matrices
-├── matrice_alloc : détruire les matrices
-└── matrice : obtenir les messages d’erreur
+```mermaid
+flowchart TD
+    main["main.c"] --> io["matrice_io<br/>Lire, écrire et afficher"]
+    main --> calcul["matrice_calcul<br/>Additionner et multiplier"]
+    main --> alloc["matrice_alloc<br/>Allouer et détruire"]
+    main --> commun["matrice<br/>Messages d’erreur et validation"]
 
-matrice_io
-├── matrice_alloc : allouer et détruire les matrices
-└── matrice : vérifier la validité des matrices
-
-matrice_calcul
-├── matrice_alloc : allouer et détruire les matrices
-└── matrice : vérifier la validité des matrices
+    io --> alloc
+    io --> commun
+    calcul --> alloc
+    calcul --> commun
+```
 
 ### Inclusions et visibilité
 
@@ -65,7 +64,7 @@ Chaque fichier d’implémentation inclut son propre en-tête pour vérifier la 
 
 Les gardes `#ifndef`, `#define` et `#endif` empêchent de traiter plusieurs fois le même en-tête dans une unité de traduction. Elles évitent notamment de redéfinir la structure lorsque plusieurs modules incluent indirectement `matrice.h`.
 
-Les fonctions internes sont déclarées `static` pour limiter leur visibilité au fichier qui les définit. Dans le squelette fourni, c’est notamment le cas des fonctions `charger` et `sauvegarder` de `main.c` et des auxiliaires de contrôle du module de calcul. Elles ne font pas partie de l’interface publique.
+Les fonctions internes sont déclarées `static` pour limiter leur visibilité au fichier qui les définit. Dans le squelette fourni, c’est notamment le cas des fonctions `charger` et `sauvegarder` de `main.c` . Elles ne font pas partie de l’interface publique.
 
 ### Propriété de la mémoire
 
@@ -118,6 +117,9 @@ Utilisation du programme :
 ```
 
 Un fichier de matrice commence par deux entiers indiquant le nombre de lignes et de colonnes. Les coefficients suivent. L’écriture utilise un espace entre deux coefficients, aucun espace en fin de ligne et un saut de ligne après chaque ligne. La lecture accepte des espaces, tabulations et sauts de ligne entre les entiers.
+
+
+![Compilation des trois programmes de test sans avertissement affiché](images/compilation.png)
 
 ## 3. Réalisation par exercice
 
@@ -187,11 +189,9 @@ for (int i = 0; i < m->nb_lignes; i++) {
 free(m->coef);
 ```
 
-Extrait du bilan observé de `test_ex1` :
+Sortie de `test_ex1` :
 
-```text
-Bilan : 16 / 16 verifications reussies.
-```
+![Sortie du test de l’exercice 1](images/test_ex1.png)
 
 **Q3.1 — Pourquoi passer un pointeur à `mat_detruire` ?**
 
@@ -276,32 +276,16 @@ for (int i=0; i < nb_lignes; i++) {
     return MAT_OK;
 ```
 
-Sortie observée (extraits) :
+Sortie du test :
 
-```text
-[OK] ouverture de test_ex2_sortie.txt en ecriture
-[OK] (2.b) mat_ecrire renvoie MAT_OK
-[OK] (2.b) le fichier contient exactement le format attendu
-[OK] (2.b) mat_ecrire refuse une matrice vide
-[OK] (2.f) mat_lire relit le fichier : MAT_OK
-[OK] (2.e) la matrice relue est identique
-[OK] (2.e) espaces et sauts de ligne en trop sont toleres
-[OK] (2.c) fichier vide
-[OK] (2.c) dimension nulle
-[OK] (2.c) dimension negative
-[OK] (2.e) coefficient manquant
-[OK] (2.e) donnee non numerique
-[OK] (2.e) entier trop grand pour un int
-[OK] (2.d) mat_lire renvoie MAT_ERR_ALLOCATION proprement
-Bilan : 14 / 14 verifications reussies.
-```
+![Sortie du test de l’exercice 2](images/test_ex2.png)
 
 L’affichage montre aussi les quatre lignes attendues : `1 2 3`, `4 5 6`, `7 8 9`, `10 11 12`.
 
 
 **Q4.1 — Pourquoi construire une matrice locale ?**
 
-La matrice locale permet de lire et de vérifier tous les coefficients avant de transférer le résultat. En cas d’erreur, elle est détruite et le résultat reste vide ; aucune matrice partiellement lue n’est transmise.
+La matrice locale permet de lire et de vérifier tous les coefficients avant de transférer le résultat. En cas d’erreur, elle est détruite et le résultat reste vide . Aucune matrice partiellement lue n’est transmise.
 
 **Q4.2 — Chaque ligne doit-elle occuper sa propre ligne de texte ?**
 
@@ -387,25 +371,9 @@ for (int k = 0; k < a->nb_colonnes; k++) {
     return MAT_OK;
 ```
 
-Sortie observée (extraits) :
+Sortie du test :
 
-```text
-[OK] (3.a) (2 x 3) + (3 x 2) : MAT_ERR_DIMENSIONS
-[OK] (3.d) (2 x 3) + (2 x 3) : MAT_OK
-[OK] (3.c) a + b est correct
-[OK] a et b n'ont pas ete modifiees
-[OK] (3.b) le resultat possede sa propre memoire
-[OK] (3.c) INT_MAX + 1 : MAT_ERR_DEPASSEMENT
-[OK] (3.e) (2 x 3) x (2 x 3) : MAT_ERR_DIMENSIONS
-[OK] (3.h) (2 x 3) x (3 x 2) : MAT_OK
-[OK] (3.g) a x c = (58 64 / 139 154)
-[OK] (3.f) (3 x 2) x (2 x 3) donne une matrice 3 x 3
-[OK] a et c n'ont pas ete modifiees
-[OK] (3.g) 2 x 10^10 depasse INT_MAX : MAT_ERR_DEPASSEMENT
-[OK] resultat = entree refuse, a reste intacte
-[OK] (3.f) echec d'allocation : MAT_ERR_ALLOCATION, r vide
-Bilan : 14 / 14 verifications reussies.
-```
+![Sortie du test de l’exercice 3](images/test_ex3.png)
 
 
 **Q5.1 — Que protège `const Matrice *a` ?**
@@ -418,7 +386,7 @@ L’entrée et la sortie désigneraient la même structure. L’initialisation d
 
 **Q5.3 — Combien de multiplications sont nécessaires ?**
 
-Pour une matrice n × p multipliée par une matrice p × q, l’algorithme effectue n × p × q multiplications. Deux matrices 1000 × 1000 demandent donc un milliard de multiplications. La complexité est O(npq), soit O(n³) pour des matrices carrées.
+Pour une matrice n × p multipliée par une matrice p × q, l’algorithme effectue n × p × q multiplications. Deux matrices 1000 × 1000 demandent donc un milliard de multiplications. 
 
 **Q5.4 — Pourquoi ne pas détecter le dépassement après une addition en `int` ?**
 
@@ -478,20 +446,13 @@ Les trois matrices A, B et R ont été allouées : elles doivent toutes être d�
 
 ## 4. Vérifications mémoire
 
-Les extraits suivants proviennent des exécutions réalisées dans la VM Linux. Ils sont limités aux résumés utiles.
+Les captures suivantes montrent les exécutions réalisées dans la VM Linux( Proxmox ) et leurs bilans mémoire.
 
 ### test_ex1
 
 Commande : `valgrind --leak-check=full ./test_ex1`.
 
-```text
-HEAP SUMMARY:
-    in use at exit: 0 bytes in 0 blocks
-  total heap usage: 11 allocs, 11 frees, 1,228 bytes allocated
-
-All heap blocks were freed -- no leaks are possible
-ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-```
+![Vérification mémoire — valgrind test ex1](images/valgrind_test_ex1.png)
 
 Les allocations sont toutes libérées, et aucune erreur mémoire n’a été détectée sur cette exécution, y compris pour les échecs d’allocation simulés.
 
@@ -499,130 +460,62 @@ Les allocations sont toutes libérées, et aucune erreur mémoire n’a été d�
 
 Commande : `valgrind --leak-check=full ./test_ex2`.
 
-```text
-HEAP SUMMARY:
-    in use at exit: 0 bytes in 0 blocks
-  total heap usage: 51 allocs, 51 frees, 60,728 bytes allocated
+![Vérification mémoire — valgrind test ex2](images/valgrind_test_ex2.png)
 
-All heap blocks were freed -- no leaks are possible
-ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-```
+![Fin du rapport Valgrind de test_ex2 : aucune erreur](images/valgrind_test_ex2_suite.png)
 
 ### test_ex3
 
 Commande : `valgrind --leak-check=full ./test_ex3`.
 
-```text
-HEAP SUMMARY:
-    in use at exit: 0 bytes in 0 blocks
-  total heap usage: 37 allocs, 37 frees, 1,412 bytes allocated
+![Vérification mémoire — valgrind test ex3](images/valgrind_test_ex3.png)
 
-All heap blocks were freed -- no leaks are possible
-ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-```
-
-Ces résumés sont transcrits des captures de la VM. Aucun bloc ne reste alloué à la sortie et Valgrind ne détecte aucune erreur sur ces tests.
+Ces captures présentent les résumés Valgrind de la VM. Aucun bloc ne reste alloué à la sortie et Valgrind ne détecte aucune erreur sur ces tests.
 
 ### demo_matrices — Succès
 
 Commande exécutée :
 
 ```bash
-valgrind --leak-check=full \
-  --errors-for-leak-kinds=definite,indirect,possible \
-  --error-exitcode=99 \
-  ./demo_matrices add donnees/A.txt donnees/B.txt R.txt
+valgrind --leak-check=full ./demo_matrices add donnees/A.txt donnees/B.txt R_add.txt
 ```
 
-```text
-HEAP SUMMARY:
-    in use at exit: 0 bytes in 0 blocks
-  total heap usage: 22 allocs, 22 frees, 14,968 bytes allocated
-
-All heap blocks were freed -- no leaks are possible
-ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-```
+![Vérification mémoire — demo addition](images/demo_addition.png)
 
 ### demo_matrices — Erreur de dimensions
 
-Même commande Valgrind, avec les arguments `add donnees/A.txt donnees/C.txt R.txt` :
+Même commande Valgrind, avec les arguments `add donnees/A.txt donnees/C.txt R_erreur.txt` :
 
-```text
-Erreur : calcul impossible : dimensions incompatibles (A : 4 x 3, B : 3 x 2)
-HEAP SUMMARY:
-    in use at exit: 0 bytes in 0 blocks
-  total heap usage: 14 allocs, 14 frees, 10,288 bytes allocated
-
-All heap blocks were freed -- no leaks are possible
-ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-```
+![Vérification mémoire — demo erreur dimensions](images/demo_erreur_dimensions.png)
 
 Le programme retourne 1 pour signaler l’échec fonctionnel. Ce code est attendu ; il ne correspond pas à une erreur mémoire. Les matrices d’entrée allouées avant le refus du calcul ont été libérées.
 
 ## 5. Démonstration finale
-
-Les sorties ci-dessous sont celles du programme lors des exécutions sous Valgrind ; les lignes propres à Valgrind sont présentées séparément en section 4. Les codes de retour ont été capturés immédiatement par la fonction shell de vérification (`code=$?`).
+Les captures montrent la commande exécutée sous Valgrind, la sortie du programme et le code de retour affiché immédiatement avec `echo $?`.
 
 ### Scénario 1 — Addition de A et B
 
-Commande : `./demo_matrices add donnees/A.txt donnees/B.txt R.txt`.
+Commande : `valgrind --leak-check=full ./demo_matrices add donnees/A.txt donnees/B.txt R_add.txt`.
 
-```text
-A (4 x 3) :
-       25       48       84
-       15       33       11
-       45       88       10
-        0       12       -5
-B (4 x 3) :
-        1        2        3
-        4        5        6
-        7        8        9
-       10       11       12
-R = A + B (4 x 3) :
-       26       50       87
-       19       38       17
-       52       96       19
-       10       23        7
-Résultat enregistré dans "R.txt".
-```
+![Addition de A et B, fichier résultat et bilan Valgrind](images/demo_addition.png)
 
-Code de retour observé : **0**. Le résultat a été comparé au fichier attendu avec `diff -wB` : il est conforme.
+Code de retour : **0**. Le fichier affiché par `cat R_add.txt` contient la somme attendue. Valgrind ne détecte aucune fuite ni erreur mémoire.
 
 ### Scénario 2 — Multiplication de A et C
 
-Commande : `./demo_matrices mul donnees/A.txt donnees/C.txt R.txt`.
+Commande : `valgrind --leak-check=full ./demo_matrices mul donnees/A.txt donnees/C.txt R_mul.txt`.
 
-```text
-A (4 x 3) :
-       25       48       84
-       15       33       11
-       45       88       10
-        0       12       -5
-B (3 x 2) :
-        1        0
-        0        1
-        2       -1
-R = A x B (4 x 2) :
-      193      -36
-       37       22
-       65       78
-      -10       17
-Résultat enregistré dans "R.txt".
-```
+![Multiplication de A et C, fichier résultat et bilan Valgrind](images/demo_multiplication.png)
 
-Code de retour observé : **0**. La seconde matrice est nommée B à l’écran parce qu’elle est le deuxième opérande, même si elle provient du fichier `C.txt`. La comparaison du résultat au fichier attendu réussit.
+Code de retour : **0**. Le fichier affiché par `cat R_mul.txt` contient le produit attendu de dimensions 4 × 2. La seconde matrice est appelée B à l’écran car elle est le deuxième opérande. Valgrind ne détecte aucune fuite ni erreur mémoire.
 
-### Scénario 3 — Fichier inexistant
+### Scénario 3 — Dimensions incompatibles
 
-Commande : `./demo_matrices add donnees/A.txt donnees/n_existe_pas.txt R.txt`.
+Commande : `valgrind --leak-check=full ./demo_matrices add donnees/A.txt donnees/C.txt R_erreur.txt`.
 
-```text
-Erreur : impossible d'ouvrir "donnees/n_existe_pas.txt" : No such file or directory
-```
+![Addition refusée : dimensions incompatibles, code 1 et aucune erreur mémoire](images/demo_erreur_dimensions.png)
 
-Code de retour observé : **1**. Le programme refuse l’opération, indique le fichier concerné et la cause système, ce qui est attendu. Valgrind n’a détecté aucune fuite ni erreur mémoire sur ce chemin.
-
-Pour contrôler manuellement un code de sortie, exécuter `echo $?` immédiatement après le programme, avant toute autre commande.
+Code de retour : **1**. Le message précise que les dimensions 4 × 3 et 3 × 2 sont incompatibles pour une addition. Le refus est attendu et les allocations sont libérées : Valgrind ne détecte aucune fuite ni erreur mémoire.
 
 ## 6. Bilan et répartition du travail 
 
